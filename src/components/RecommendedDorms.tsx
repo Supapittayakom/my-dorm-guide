@@ -14,7 +14,7 @@ const dorms = [
 
 const RecommendedDorms = () => {
   return (
-    <section className="container mx-auto px-4 py-8">
+    <section className="py-2">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <h3 className="text-xl font-bold text-foreground">หอแนะนำสำหรับคุณ</h3>

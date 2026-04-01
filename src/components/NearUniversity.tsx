@@ -22,7 +22,7 @@ const NearUniversity = () => {
   const [selectedUni, setSelectedUni] = useState(universities[0]);
 
   return (
-    <section className="container mx-auto px-4 py-8">
+    <section className="py-2">
       <div className="flex items-center gap-3 mb-6">
         <GraduationCap className="h-6 w-6 text-primary" />
         <h3 className="text-xl font-bold text-foreground">หอใกล้มหาวิทยาลัย</h3>
