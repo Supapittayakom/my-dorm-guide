@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search, MapPin, X, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const suggestions = [
   "ม.เชียงใหม่",
@@ -14,6 +15,7 @@ const SearchBar = () => {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>(["ม.เชียงใหม่", "หอในเมือง", "ม.เกษตร บางเขน"]);
+  const navigate = useNavigate();
 
   const filtered = query
     ? suggestions.filter((s) => s.toLowerCase().includes(query.toLowerCase()))
@@ -24,6 +26,7 @@ const SearchBar = () => {
       setRecentSearches((prev) => [query, ...prev.slice(0, 4)]);
     }
     setFocused(false);
+    navigate(`/listing?q=${encodeURIComponent(query)}`);
   };
 
   const removeRecent = (item: string) => {
