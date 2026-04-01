@@ -17,11 +17,11 @@ const Navbar = () => {
 
         {/* Nav Links */}
         <div className="hidden md:flex items-center gap-1">
-          <Button variant="ghost" className="gap-2 font-medium">
-            <Home className="h-4 w-4" /> หน้าแรก
+          <Button variant="ghost" className="gap-2 font-medium" asChild>
+            <Link to="/"><Home className="h-4 w-4" /> หน้าแรก</Link>
           </Button>
-          <Button variant="ghost" className="gap-2 font-medium">
-            <Building2 className="h-4 w-4" /> หอพัก
+          <Button variant="ghost" className="gap-2 font-medium" asChild>
+            <Link to="/listing"><Building2 className="h-4 w-4" /> หอพัก</Link>
           </Button>
           <Button variant="outline" className="gap-2 font-medium">
             <FileEdit className="h-4 w-4" /> ลงประกาศหอพัก (สำหรับเจ้าของ)
