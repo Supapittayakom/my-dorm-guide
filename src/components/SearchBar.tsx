@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search, MapPin, X, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const suggestions = [
   "ม.เชียงใหม่",
