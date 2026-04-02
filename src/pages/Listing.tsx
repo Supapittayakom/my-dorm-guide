@@ -534,6 +534,7 @@ const Listing = () => {
               <Map className="h-4 w-4" /> แผนที่
             </button>
           </div>
+          </div>
         </div>
 
         {/* Mobile controls */}
