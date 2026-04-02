@@ -146,6 +146,8 @@ const Listing = () => {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [loading, setLoading] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // Debounce search & price
   const debouncedQuery = useDebounce(query, 400);
