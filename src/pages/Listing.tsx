@@ -20,9 +20,49 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Search, MapPin, LayoutGrid, Map, SlidersHorizontal, X, Home, SearchX, RotateCcw, Star, ArrowUpDown, ChevronDown,
+  Search, MapPin, LayoutGrid, Map, SlidersHorizontal, X, Home, SearchX, RotateCcw, Star, ArrowUpDown, ChevronDown, Clock, Loader2,
 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+
+// ─── Highlight keyword helper ───
+const HighlightText = ({ text, keyword }: { text: string; keyword: string }) => {
+  if (!keyword || !text) return <>{text}</>;
+  const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+  const parts = text.split(regex);
+  return (
+    <>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark key={i} className="bg-primary/20 text-primary rounded-sm px-0.5">{part}</mark>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+};
+
+// ─── Recent searches (localStorage) ───
+const RECENT_KEY = "dorm_recent_searches";
+const getRecent = (): string[] => {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]").slice(0, 5); }
+  catch { return []; }
+};
+const saveRecent = (q: string) => {
+  if (!q.trim()) return;
+  const list = getRecent().filter((s) => s !== q.trim());
+  list.unshift(q.trim());
+  localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 5)));
+};
+
+// ─── Suggestion data ───
+const suggestionData = [
+  "ม.เกษตรศาสตร์", "ม.ศิลปากร", "ม.ธรรมศาสตร์", "ม.มหิดล", "จุฬาลงกรณ์",
+  "ลาดพร้าว", "สยาม", "ศรีราชา", "เชียงใหม่",
+  "Green View Residence", "Campus Place", "Sukjai Apartment", "Cozy Home",
+  "Happy Dorm", "The Nine Place", "Baan Sabai", "Loft Studio 88",
+  "PJ Mansion", "City Dorm Plus", "River Side Room", "Premium Suite",
+];
 
 import dorm1 from "@/assets/dorm1.jpg";
 import dorm2 from "@/assets/dorm2.jpg";
