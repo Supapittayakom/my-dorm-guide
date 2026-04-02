@@ -17,7 +17,10 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  Search, MapPin, LayoutGrid, Map, SlidersHorizontal, X, Home, SearchX, RotateCcw, Star,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Search, MapPin, LayoutGrid, Map, SlidersHorizontal, X, Home, SearchX, RotateCcw, Star, ArrowUpDown, ChevronDown,
 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 
@@ -51,13 +54,23 @@ const amenityLabels: Record<string, string> = {
   air: "แอร์", wifi: "Wi-Fi", parking: "ที่จอดรถ", furniture: "เฟอร์นิเจอร์", fitness: "ฟิตเนส",
 };
 
-const sortOptions: { value: SortOption; label: string }[] = [
-  { value: "popular", label: "ยอดนิยม" },
-  { value: "price-asc", label: "ราคาต่ำสุด" },
-  { value: "price-desc", label: "ราคาสูงสุด" },
-  { value: "rating", label: "รีวิวดีที่สุด" },
-  { value: "nearest", label: "ใกล้ที่สุด" },
+const sortOptions: { value: SortOption; label: string; icon: string }[] = [
+  { value: "popular", label: "ยอดนิยม", icon: "🔥" },
+  { value: "price-asc", label: "ราคาต่ำ → สูง", icon: "💸" },
+  { value: "price-desc", label: "ราคาสูง → ต่ำ", icon: "💸" },
+  { value: "rating", label: "รีวิวดีที่สุด", icon: "⭐" },
+  { value: "nearest", label: "ใกล้ที่สุด", icon: "📍" },
 ];
+
+const DEFAULT_SORT: SortOption = "popular";
+
+/** Parse distance string to meters for sorting */
+function parseDistance(d: string): number {
+  const num = parseFloat(d);
+  if (isNaN(num)) return Infinity;
+  if (d.includes("กม")) return num * 1000;
+  return num;
+}
 
 // ─── Parse URL → State ───
 function parseParams(sp: URLSearchParams) {
@@ -135,13 +148,21 @@ const Listing = () => {
       if (minRating && d.rating < 4) return false;
       return true;
     });
-    switch (sort) {
-      case "price-asc": result.sort((a, b) => a.price - b.price); break;
-      case "price-desc": result.sort((a, b) => b.price - a.price); break;
-      case "rating": result.sort((a, b) => b.rating - a.rating); break;
-      case "nearest": result.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance)); break;
-      default: result.sort((a, b) => b.reviews - a.reviews); break;
-    }
+    // Primary + secondary sort with edge case handling
+    result.sort((a, b) => {
+      let cmp = 0;
+      switch (sort) {
+        case "price-asc": cmp = a.price - b.price; break;
+        case "price-desc": cmp = b.price - a.price; break;
+        case "rating": cmp = (b.rating ?? 0) - (a.rating ?? 0); break;
+        case "nearest": cmp = parseDistance(a.distance) - parseDistance(b.distance); break;
+        default: cmp = b.reviews - a.reviews; break;
+      }
+      // Secondary sort: if equal, sort by rating desc then price asc
+      if (cmp === 0) cmp = (b.rating ?? 0) - (a.rating ?? 0);
+      if (cmp === 0) cmp = a.price - b.price;
+      return cmp;
+    });
     return result;
   }, [debouncedQuery, debouncedPrice, roomTypes, selectedAmenities, petFriendly, nearBTS, minRating, sort]);
 
@@ -159,6 +180,10 @@ const Listing = () => {
   if (petFriendly) activeTags.push({ label: "เลี้ยงสัตว์ได้", onRemove: () => setPetFriendly(false) });
   if (nearBTS) activeTags.push({ label: "ใกล้ BTS / มหาลัย", onRemove: () => setNearBTS(false) });
   if (minRating) activeTags.push({ label: "4 ดาวขึ้นไป", onRemove: () => setMinRating(false) });
+  if (sort !== DEFAULT_SORT) {
+    const sortLabel = sortOptions.find((o) => o.value === sort)?.label || sort;
+    activeTags.push({ label: `เรียง: ${sortLabel}`, onRemove: () => setSort(DEFAULT_SORT) });
+  }
 
   const hasFilters = activeTags.length > 0;
 
@@ -170,7 +195,7 @@ const Listing = () => {
     setPetFriendly(false);
     setNearBTS(false);
     setMinRating(false);
-    setSort("popular");
+    setSort(DEFAULT_SORT);
     setPage(1);
   };
 
@@ -284,18 +309,28 @@ const Listing = () => {
             />
           </div>
 
-          {/* Sort pills - desktop */}
-          <div className="hidden lg:flex items-center gap-1 shrink-0">
-            <span className="text-sm text-muted-foreground mr-1">เรียงตาม:</span>
-            {sortOptions.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => { setSort(opt.value); setPage(1); }}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${sort === opt.value ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary text-secondary-foreground hover:bg-secondary/70"}`}
-              >
-                {opt.label}
-              </button>
-            ))}
+          {/* Sort dropdown - desktop */}
+          <div className="hidden lg:flex items-center gap-2 shrink-0">
+            <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+            <Select value={sort} onValueChange={(v) => { setSort(v as SortOption); setPage(1); }}>
+              <SelectTrigger className="w-[200px] h-10 bg-card border-border">
+                <SelectValue placeholder="เรียงตาม" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    <span className="flex items-center gap-2">
+                      <span>{opt.icon}</span> {opt.label}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {sort !== DEFAULT_SORT && (
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => { setSort(DEFAULT_SORT); setPage(1); }} title="รีเซ็ตการเรียง">
+                <RotateCcw className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
 
           {/* View toggle */}
@@ -332,13 +367,33 @@ const Listing = () => {
               </div>
             </SheetContent>
           </Sheet>
-          <select
-            className="h-10 px-3 rounded-lg border border-input bg-background text-foreground text-sm"
-            value={sort}
-            onChange={(e) => { setSort(e.target.value as SortOption); setPage(1); }}
-          >
-            {sortOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <ArrowUpDown className="h-4 w-4" />
+                {sortOptions.find((o) => o.value === sort)?.label || "เรียงตาม"}
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="rounded-t-2xl pb-8">
+              <SheetHeader>
+                <SheetTitle>เรียงตาม</SheetTitle>
+              </SheetHeader>
+              <div className="mt-4 space-y-1">
+                {sortOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSort(opt.value); setPage(1); }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${sort === opt.value ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary"}`}
+                  >
+                    <span className="text-lg">{opt.icon}</span>
+                    {opt.label}
+                    {sort === opt.value && <span className="ml-auto text-primary">✓</span>}
+                  </button>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
         {/* Search highlight + result count */}
@@ -353,6 +408,11 @@ const Listing = () => {
               พบ <span className="font-semibold text-primary">{filtered.length}</span> ห้อง
               {loading && <span className="ml-2 inline-block w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />}
             </p>
+          </div>
+          {/* Current sort indicator */}
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full">
+            <ArrowUpDown className="h-3 w-3" />
+            เรียงตาม: <span className="font-semibold text-foreground">{sortOptions.find((o) => o.value === sort)?.icon} {sortOptions.find((o) => o.value === sort)?.label}</span>
           </div>
         </div>
 
