@@ -697,7 +697,7 @@ const Listing = () => {
                       {/* Info */}
                       <div className="flex-1 p-4 flex flex-col justify-between">
                         <div>
-                          <h4 className="text-lg font-bold text-foreground">{dorm.name}</h4>
+                          <h4 className="text-lg font-bold text-foreground"><HighlightText text={dorm.name} keyword={debouncedQuery} /></h4>
                           <p className="text-primary font-bold text-lg mt-1">
                             ฿{dorm.price.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">/ เดือน</span>
                           </p>
@@ -707,7 +707,7 @@ const Listing = () => {
                             <span className="text-sm text-muted-foreground">({dorm.reviews} รีวิว)</span>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                            <MapPin className="h-3.5 w-3.5" /> {dorm.distance} จาก {dorm.location}
+                            <MapPin className="h-3.5 w-3.5" /> {dorm.distance} จาก <HighlightText text={dorm.location} keyword={debouncedQuery} />
                           </p>
                           {/* Amenity chips */}
                           <div className="flex gap-1.5 mt-2 flex-wrap">
