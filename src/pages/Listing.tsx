@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
