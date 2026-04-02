@@ -153,6 +153,26 @@ const Listing = () => {
   const debouncedQuery = useDebounce(query, 400);
   const debouncedPrice = useDebounce(priceRange, 350);
 
+  // Save recent search when debounced query changes
+  useEffect(() => { if (debouncedQuery) saveRecent(debouncedQuery); }, [debouncedQuery]);
+
+  // Close suggest dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchFocused(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Auto-suggest: filter suggestions by current query
+  const suggestions = useMemo(() => {
+    if (!query || query.length < 1) return [];
+    return suggestionData.filter((s) => s.toLowerCase().includes(query.toLowerCase())).slice(0, 6);
+  }, [query]);
+
+  const recentSearches = useMemo(() => getRecent(), [searchFocused]); // refresh when focused
+
   // ─── URL Sync ───
   const syncURL = useCallback(() => {
     const p = new URLSearchParams();
