@@ -436,17 +436,70 @@ const Listing = () => {
         })()}
 
         {/* Search + Sort bar */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="ค้นหาหอพัก, มหาวิทยาลัย, พื้นที่..."
-              className="w-full h-12 pl-10 pr-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-              value={query}
-              onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-            />
-          </div>
+        <div className="sticky top-0 z-30 bg-muted/30 backdrop-blur-sm pb-3 -mx-4 px-4 sm:static sm:z-auto sm:bg-transparent sm:backdrop-blur-none sm:pb-0 sm:mx-0 sm:px-0">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            {/* Enhanced Search Bar */}
+            <div ref={searchRef} className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
+              {loading && query && (
+                <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin z-10" />
+              )}
+              {query && (
+                <button
+                  onClick={() => { setQuery(""); setPage(1); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20 transition z-10"
+                >
+                  <X className="h-3 w-3 text-muted-foreground" />
+                </button>
+              )}
+              <input
+                type="text"
+                placeholder="ค้นหาหอพัก, มหาวิทยาลัย, พื้นที่..."
+                className="w-full h-12 pl-10 pr-10 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                onFocus={() => setSearchFocused(true)}
+                onKeyDown={(e) => { if (e.key === "Enter") setSearchFocused(false); }}
+              />
+
+              {/* Auto-suggest dropdown */}
+              {searchFocused && (suggestions.length > 0 || (query.length === 0 && recentSearches.length > 0)) && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50">
+                  {/* Recent searches */}
+                  {query.length === 0 && recentSearches.length > 0 && (
+                    <div className="p-2">
+                      <p className="text-xs text-muted-foreground px-2 py-1 font-medium">ค้นหาล่าสุด</p>
+                      {recentSearches.map((s, i) => (
+                        <button
+                          key={i}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition"
+                          onMouseDown={(e) => { e.preventDefault(); setQuery(s); setPage(1); setSearchFocused(false); }}
+                        >
+                          <Clock className="h-3.5 w-3.5 text-muted-foreground" /> {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {/* Suggestions */}
+                  {suggestions.length > 0 && (
+                    <div className="p-2">
+                      {query.length === 0 || recentSearches.length === 0 ? null : <div className="border-t border-border my-1" />}
+                      <p className="text-xs text-muted-foreground px-2 py-1 font-medium">แนะนำ</p>
+                      {suggestions.map((s, i) => (
+                        <button
+                          key={i}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition"
+                          onMouseDown={(e) => { e.preventDefault(); setQuery(s); setPage(1); setSearchFocused(false); }}
+                        >
+                          <Search className="h-3.5 w-3.5 text-muted-foreground" />
+                          <HighlightText text={s} keyword={query} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
           {/* Sort dropdown - desktop */}
           <div className="hidden lg:flex items-center gap-2 shrink-0">
