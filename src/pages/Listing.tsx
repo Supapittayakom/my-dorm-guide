@@ -532,12 +532,15 @@ const Listing = () => {
 
           {/* View toggle */}
           <div className="hidden md:flex items-center border border-border rounded-lg overflow-hidden shrink-0">
-            <button onClick={() => setViewMode("list")} className={`px-3 py-2 flex items-center gap-1 text-xs font-medium transition ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-card text-foreground hover:bg-secondary"}`}>
-              <LayoutGrid className="h-4 w-4" /> รายการ
-            </button>
-            <button onClick={() => setViewMode("map")} className={`px-3 py-2 flex items-center gap-1 text-xs font-medium transition ${viewMode === "map" ? "bg-primary text-primary-foreground" : "bg-card text-foreground hover:bg-secondary"}`}>
-              <Map className="h-4 w-4" /> แผนที่
-            </button>
+            {(["list", "hybrid", "map"] as const).map((m) => {
+              const icons = { list: <LayoutGrid className="h-4 w-4" />, hybrid: <><LayoutGrid className="h-3.5 w-3.5" /><Map className="h-3.5 w-3.5" /></>, map: <Map className="h-4 w-4" /> };
+              const labels = { list: "รายการ", hybrid: "ผสม", map: "แผนที่" };
+              return (
+                <button key={m} onClick={() => { setViewMode(m); localStorage.setItem("dorm_view_mode", m); }} className={`px-3 py-2 flex items-center gap-1 text-xs font-medium transition ${viewMode === m ? "bg-primary text-primary-foreground" : "bg-card text-foreground hover:bg-secondary"}`}>
+                  {icons[m]} {labels[m]}
+                </button>
+              );
+            })}
           </div>
           </div>
         </div>
