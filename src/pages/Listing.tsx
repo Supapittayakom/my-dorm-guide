@@ -409,6 +409,11 @@ const Listing = () => {
               {loading && <span className="ml-2 inline-block w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />}
             </p>
           </div>
+          {/* Current sort indicator */}
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full">
+            <ArrowUpDown className="h-3 w-3" />
+            เรียงตาม: <span className="font-semibold text-foreground">{sortOptions.find((o) => o.value === sort)?.icon} {sortOptions.find((o) => o.value === sort)?.label}</span>
+          </div>
         </div>
 
         {/* Active filter tags */}
