@@ -633,25 +633,91 @@ const Listing = () => {
         )}
 
         {/* Main layout */}
-        <div className="flex gap-6">
-          {/* Sidebar - desktop */}
-          <aside className="hidden lg:block w-72 shrink-0">
-            <div className="bg-card rounded-xl border border-border p-5 sticky top-20">
-              <FilterContent />
-            </div>
-          </aside>
+        <div className={`flex gap-6 ${viewMode === "hybrid" ? "flex-col lg:flex-row" : ""}`}>
+          {/* Sidebar - desktop (hide on full map) */}
+          {viewMode !== "map" && (
+            <aside className="hidden lg:block w-72 shrink-0">
+              <div className="bg-card rounded-xl border border-border p-5 sticky top-20">
+                <FilterContent />
+              </div>
+            </aside>
+          )}
 
-          {/* Results */}
+          {/* Hybrid: list left + map right */}
+          {viewMode === "hybrid" ? (
+            <div className="flex-1 flex flex-col lg:flex-row gap-4 min-w-0">
+              {/* List side */}
+              <div className="flex-1 min-w-0 max-h-[700px] overflow-y-auto space-y-3 pr-1">
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex gap-3 bg-card rounded-xl border border-border p-3 animate-pulse">
+                      <Skeleton className="w-24 h-20 rounded-lg shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                        <Skeleton className="h-3 w-1/3" />
+                      </div>
+                    </div>
+                  ))
+                ) : filtered.length === 0 ? (
+                  <div className="bg-card border border-border rounded-xl p-8 text-center">
+                    <SearchX className="h-12 w-12 mx-auto text-muted-foreground/40 mb-2" />
+                    <p className="font-semibold text-foreground">ไม่พบหอที่ตรงเงื่อนไข</p>
+                    <Button size="sm" onClick={resetFilters} className="mt-2 gap-1"><RotateCcw className="h-3 w-3" /> รีเซ็ต</Button>
+                  </div>
+                ) : (
+                  filtered.map((dorm) => (
+                    <div
+                      key={dorm.id}
+                      className={`flex gap-3 bg-card rounded-xl border overflow-hidden cursor-pointer transition-all duration-200 ${highlightedDormId === dorm.id ? "border-primary ring-2 ring-primary/20 shadow-md" : "border-border hover:shadow-md"}`}
+                      onMouseEnter={() => setHighlightedDormId(dorm.id)}
+                      onMouseLeave={() => setHighlightedDormId(null)}
+                    >
+                      <div className="relative w-28 h-24 shrink-0 overflow-hidden">
+                        <img src={dorm.image} alt={dorm.name} className="w-full h-full object-cover" />
+                        {dorm.badge && (
+                          <span className={`absolute top-1 left-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${dorm.badgeType === "hot" ? "badge-hot" : dorm.badgeType === "new" ? "badge-new" : "badge-promo"}`}>{dorm.badge}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 py-2 pr-3 min-w-0">
+                        <h4 className="font-semibold text-sm text-foreground truncate">{dorm.name}</h4>
+                        <p className="text-primary font-bold text-sm">฿{dorm.price.toLocaleString()}<span className="text-xs font-normal text-muted-foreground">/เดือน</span></p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Star className="h-3 w-3 fill-[hsl(var(--star))] text-[hsl(var(--star))]" />
+                          <span className="text-xs font-medium">{dorm.rating}</span>
+                          <span className="text-xs text-muted-foreground">· {dorm.distance}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              {/* Map side */}
+              <div className="flex-1 min-h-[400px] lg:min-h-0 lg:h-[700px] sticky top-20">
+                <Suspense fallback={<div className="h-full bg-card border border-border rounded-xl flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+                  <DormMapView
+                    dorms={filtered}
+                    loading={loading}
+                    highlightedId={highlightedDormId}
+                    onDormHover={setHighlightedDormId}
+                    mode="hybrid"
+                  />
+                </Suspense>
+              </div>
+            </div>
+          ) : (
+          /* Results - list or full map */
           <main className="flex-1 min-w-0">
             {viewMode === "map" ? (
-              <div className="bg-card border border-border rounded-xl h-[500px] flex items-center justify-center">
-                <div className="text-center text-muted-foreground">
-                  <Map className="h-16 w-16 mx-auto mb-3 opacity-40" />
-                  <p className="text-lg font-semibold">Map View</p>
-                  <p className="text-sm">แผนที่จะแสดงตำแหน่งหอพักทั้งหมด</p>
-                  <p className="text-xs mt-1">(เชื่อมต่อ Google Maps API เร็ว ๆ นี้)</p>
-                </div>
-              </div>
+              <Suspense fallback={<div className="h-[600px] bg-card border border-border rounded-xl flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+                <DormMapView
+                  dorms={filtered}
+                  loading={loading}
+                  highlightedId={highlightedDormId}
+                  onDormHover={setHighlightedDormId}
+                  mode="full"
+                />
+              </Suspense>
             ) : loading ? (
               <div className="space-y-4">
                 {[1, 2, 3, 4].map((i) => (
