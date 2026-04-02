@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -20,9 +20,49 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  Search, MapPin, LayoutGrid, Map, SlidersHorizontal, X, Home, SearchX, RotateCcw, Star, ArrowUpDown, ChevronDown,
+  Search, MapPin, LayoutGrid, Map, SlidersHorizontal, X, Home, SearchX, RotateCcw, Star, ArrowUpDown, ChevronDown, Clock, Loader2,
 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+
+// ─── Highlight keyword helper ───
+const HighlightText = ({ text, keyword }: { text: string; keyword: string }) => {
+  if (!keyword || !text) return <>{text}</>;
+  const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+  const parts = text.split(regex);
+  return (
+    <>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark key={i} className="bg-primary/20 text-primary rounded-sm px-0.5">{part}</mark>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+};
+
+// ─── Recent searches (localStorage) ───
+const RECENT_KEY = "dorm_recent_searches";
+const getRecent = (): string[] => {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]").slice(0, 5); }
+  catch { return []; }
+};
+const saveRecent = (q: string) => {
+  if (!q.trim()) return;
+  const list = getRecent().filter((s) => s !== q.trim());
+  list.unshift(q.trim());
+  localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 5)));
+};
+
+// ─── Suggestion data ───
+const suggestionData = [
+  "ม.เกษตรศาสตร์", "ม.ศิลปากร", "ม.ธรรมศาสตร์", "ม.มหิดล", "จุฬาลงกรณ์",
+  "ลาดพร้าว", "สยาม", "ศรีราชา", "เชียงใหม่",
+  "Green View Residence", "Campus Place", "Sukjai Apartment", "Cozy Home",
+  "Happy Dorm", "The Nine Place", "Baan Sabai", "Loft Studio 88",
+  "PJ Mansion", "City Dorm Plus", "River Side Room", "Premium Suite",
+];
 
 import dorm1 from "@/assets/dorm1.jpg";
 import dorm2 from "@/assets/dorm2.jpg";
@@ -106,10 +146,32 @@ const Listing = () => {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [loading, setLoading] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // Debounce search & price
   const debouncedQuery = useDebounce(query, 400);
   const debouncedPrice = useDebounce(priceRange, 350);
+
+  // Save recent search when debounced query changes
+  useEffect(() => { if (debouncedQuery) saveRecent(debouncedQuery); }, [debouncedQuery]);
+
+  // Close suggest dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchFocused(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Auto-suggest: filter suggestions by current query
+  const suggestions = useMemo(() => {
+    if (!query || query.length < 1) return [];
+    return suggestionData.filter((s) => s.toLowerCase().includes(query.toLowerCase())).slice(0, 6);
+  }, [query]);
+
+  const recentSearches = useMemo(() => getRecent(), [searchFocused]); // refresh when focused
 
   // ─── URL Sync ───
   const syncURL = useCallback(() => {
@@ -374,17 +436,70 @@ const Listing = () => {
         })()}
 
         {/* Search + Sort bar */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="ค้นหาหอพัก, มหาวิทยาลัย, พื้นที่..."
-              className="w-full h-12 pl-10 pr-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-              value={query}
-              onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-            />
-          </div>
+        <div className="sticky top-0 z-30 bg-muted/30 backdrop-blur-sm pb-3 -mx-4 px-4 sm:static sm:z-auto sm:bg-transparent sm:backdrop-blur-none sm:pb-0 sm:mx-0 sm:px-0">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            {/* Enhanced Search Bar */}
+            <div ref={searchRef} className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
+              {loading && query && (
+                <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin z-10" />
+              )}
+              {query && (
+                <button
+                  onClick={() => { setQuery(""); setPage(1); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20 transition z-10"
+                >
+                  <X className="h-3 w-3 text-muted-foreground" />
+                </button>
+              )}
+              <input
+                type="text"
+                placeholder="ค้นหาหอพัก, มหาวิทยาลัย, พื้นที่..."
+                className="w-full h-12 pl-10 pr-10 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                onFocus={() => setSearchFocused(true)}
+                onKeyDown={(e) => { if (e.key === "Enter") setSearchFocused(false); }}
+              />
+
+              {/* Auto-suggest dropdown */}
+              {searchFocused && (suggestions.length > 0 || (query.length === 0 && recentSearches.length > 0)) && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50">
+                  {/* Recent searches */}
+                  {query.length === 0 && recentSearches.length > 0 && (
+                    <div className="p-2">
+                      <p className="text-xs text-muted-foreground px-2 py-1 font-medium">ค้นหาล่าสุด</p>
+                      {recentSearches.map((s, i) => (
+                        <button
+                          key={i}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition"
+                          onMouseDown={(e) => { e.preventDefault(); setQuery(s); setPage(1); setSearchFocused(false); }}
+                        >
+                          <Clock className="h-3.5 w-3.5 text-muted-foreground" /> {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {/* Suggestions */}
+                  {suggestions.length > 0 && (
+                    <div className="p-2">
+                      {query.length === 0 || recentSearches.length === 0 ? null : <div className="border-t border-border my-1" />}
+                      <p className="text-xs text-muted-foreground px-2 py-1 font-medium">แนะนำ</p>
+                      {suggestions.map((s, i) => (
+                        <button
+                          key={i}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition"
+                          onMouseDown={(e) => { e.preventDefault(); setQuery(s); setPage(1); setSearchFocused(false); }}
+                        >
+                          <Search className="h-3.5 w-3.5 text-muted-foreground" />
+                          <HighlightText text={s} keyword={query} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
           {/* Sort dropdown - desktop */}
           <div className="hidden lg:flex items-center gap-2 shrink-0">
@@ -418,6 +533,7 @@ const Listing = () => {
             <button onClick={() => setViewMode("map")} className={`px-3 py-2 flex items-center gap-1 text-xs font-medium transition ${viewMode === "map" ? "bg-primary text-primary-foreground" : "bg-card text-foreground hover:bg-secondary"}`}>
               <Map className="h-4 w-4" /> แผนที่
             </button>
+          </div>
           </div>
         </div>
 
@@ -581,7 +697,7 @@ const Listing = () => {
                       {/* Info */}
                       <div className="flex-1 p-4 flex flex-col justify-between">
                         <div>
-                          <h4 className="text-lg font-bold text-foreground">{dorm.name}</h4>
+                          <h4 className="text-lg font-bold text-foreground"><HighlightText text={dorm.name} keyword={debouncedQuery} /></h4>
                           <p className="text-primary font-bold text-lg mt-1">
                             ฿{dorm.price.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">/ เดือน</span>
                           </p>
@@ -591,7 +707,7 @@ const Listing = () => {
                             <span className="text-sm text-muted-foreground">({dorm.reviews} รีวิว)</span>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                            <MapPin className="h-3.5 w-3.5" /> {dorm.distance} จาก {dorm.location}
+                            <MapPin className="h-3.5 w-3.5" /> {dorm.distance} จาก <HighlightText text={dorm.location} keyword={debouncedQuery} />
                           </p>
                           {/* Amenity chips */}
                           <div className="flex gap-1.5 mt-2 flex-wrap">
