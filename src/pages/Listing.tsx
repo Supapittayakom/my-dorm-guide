@@ -195,7 +195,7 @@ const Listing = () => {
     setPetFriendly(false);
     setNearBTS(false);
     setMinRating(false);
-    setSort("popular");
+    setSort(DEFAULT_SORT);
     setPage(1);
   };
 
