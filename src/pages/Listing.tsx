@@ -148,13 +148,21 @@ const Listing = () => {
       if (minRating && d.rating < 4) return false;
       return true;
     });
-    switch (sort) {
-      case "price-asc": result.sort((a, b) => a.price - b.price); break;
-      case "price-desc": result.sort((a, b) => b.price - a.price); break;
-      case "rating": result.sort((a, b) => b.rating - a.rating); break;
-      case "nearest": result.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance)); break;
-      default: result.sort((a, b) => b.reviews - a.reviews); break;
-    }
+    // Primary + secondary sort with edge case handling
+    result.sort((a, b) => {
+      let cmp = 0;
+      switch (sort) {
+        case "price-asc": cmp = a.price - b.price; break;
+        case "price-desc": cmp = b.price - a.price; break;
+        case "rating": cmp = (b.rating ?? 0) - (a.rating ?? 0); break;
+        case "nearest": cmp = parseDistance(a.distance) - parseDistance(b.distance); break;
+        default: cmp = b.reviews - a.reviews; break;
+      }
+      // Secondary sort: if equal, sort by rating desc then price asc
+      if (cmp === 0) cmp = (b.rating ?? 0) - (a.rating ?? 0);
+      if (cmp === 0) cmp = a.price - b.price;
+      return cmp;
+    });
     return result;
   }, [debouncedQuery, debouncedPrice, roomTypes, selectedAmenities, petFriendly, nearBTS, minRating, sort]);
 
