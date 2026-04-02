@@ -180,6 +180,10 @@ const Listing = () => {
   if (petFriendly) activeTags.push({ label: "เลี้ยงสัตว์ได้", onRemove: () => setPetFriendly(false) });
   if (nearBTS) activeTags.push({ label: "ใกล้ BTS / มหาลัย", onRemove: () => setNearBTS(false) });
   if (minRating) activeTags.push({ label: "4 ดาวขึ้นไป", onRemove: () => setMinRating(false) });
+  if (sort !== DEFAULT_SORT) {
+    const sortLabel = sortOptions.find((o) => o.value === sort)?.label || sort;
+    activeTags.push({ label: `เรียง: ${sortLabel}`, onRemove: () => setSort(DEFAULT_SORT) });
+  }
 
   const hasFilters = activeTags.length > 0;
 
