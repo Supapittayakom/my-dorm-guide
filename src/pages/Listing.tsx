@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -69,20 +69,22 @@ import dorm2 from "@/assets/dorm2.jpg";
 import dorm3 from "@/assets/dorm3.jpg";
 import dorm4 from "@/assets/dorm4.jpg";
 
+const DormMapView = lazy(() => import("@/components/DormMapView"));
+
 // Mock data
 const allDorms = [
-  { id: 1, image: dorm1, name: "Green View Residence", location: "ใกล้ ม.ศิลปากร", distance: "500 ม.", rating: 4.6, reviews: 150, price: 4500, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "parking"], pets: false, nearBTS: false },
-  { id: 2, image: dorm2, name: "Campus Place", location: "ใกล้ ม.ศิลปากร", distance: "300 ม.", rating: 4.5, reviews: 95, price: 3200, badge: "ใหม่", badgeType: "new" as const, roomType: "single", amenities: ["air", "wifi"], pets: false, nearBTS: true },
-  { id: 3, image: dorm3, name: "Sukjai Apartment", location: "ใกล้ ม.ศิลปากร", distance: "800 ม.", rating: 4.2, reviews: 80, price: 2800, originalPrice: 3200, badge: "ลดราคา", badgeType: "promo" as const, roomType: "shared", amenities: ["fan", "wifi"], pets: true, nearBTS: false },
-  { id: 4, image: dorm4, name: "Cozy Home", location: "ใกล้ ม.ศิลปากร", distance: "600 ม.", rating: 4.7, reviews: 120, price: 5000, roomType: "single", amenities: ["air", "wifi", "parking", "furniture", "fitness"], pets: false, nearBTS: true },
-  { id: 5, image: dorm1, name: "Happy Dorm", location: "ใกล้ ม.เกษตร", distance: "200 ม.", rating: 4.8, reviews: 200, price: 3800, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "furniture"], pets: true, nearBTS: true },
-  { id: 6, image: dorm2, name: "The Nine Place", location: "ใกล้ ม.เกษตร", distance: "450 ม.", rating: 4.3, reviews: 65, price: 4200, roomType: "shared", amenities: ["air", "parking"], pets: false, nearBTS: false },
-  { id: 7, image: dorm3, name: "Baan Sabai", location: "ลาดพร้าว", distance: "1.2 กม.", rating: 4.0, reviews: 42, price: 2500, originalPrice: 3000, badge: "ลดราคา", badgeType: "promo" as const, roomType: "shared", amenities: ["fan"], pets: true, nearBTS: true },
-  { id: 8, image: dorm4, name: "Loft Studio 88", location: "ศรีราชา", distance: "700 ม.", rating: 4.9, reviews: 310, price: 6500, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "parking", "furniture", "fitness"], pets: false, nearBTS: false },
-  { id: 9, image: dorm1, name: "PJ Mansion", location: "ใกล้ ม.ศิลปากร", distance: "350 ม.", rating: 3.9, reviews: 30, price: 2200, roomType: "shared", amenities: ["fan", "wifi"], pets: false, nearBTS: false },
-  { id: 10, image: dorm2, name: "City Dorm Plus", location: "เชียงใหม่", distance: "900 ม.", rating: 4.4, reviews: 88, price: 3500, badge: "ใหม่", badgeType: "new" as const, roomType: "single", amenities: ["air", "wifi", "furniture"], pets: true, nearBTS: false },
-  { id: 11, image: dorm3, name: "River Side Room", location: "ใกล้ ม.ธรรมศาสตร์", distance: "1 กม.", rating: 4.1, reviews: 55, price: 2900, roomType: "single", amenities: ["air", "wifi", "parking"], pets: false, nearBTS: true },
-  { id: 12, image: dorm4, name: "Premium Suite", location: "สยาม", distance: "400 ม.", rating: 4.6, reviews: 175, price: 7500, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "parking", "furniture", "fitness"], pets: true, nearBTS: true },
+  { id: 1, image: dorm1, name: "Green View Residence", location: "ใกล้ ม.ศิลปากร", distance: "500 ม.", rating: 4.6, reviews: 150, price: 4500, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "parking"], pets: false, nearBTS: false, lat: 13.8199, lng: 100.0413 },
+  { id: 2, image: dorm2, name: "Campus Place", location: "ใกล้ ม.ศิลปากร", distance: "300 ม.", rating: 4.5, reviews: 95, price: 3200, badge: "ใหม่", badgeType: "new" as const, roomType: "single", amenities: ["air", "wifi"], pets: false, nearBTS: true, lat: 13.8215, lng: 100.0435 },
+  { id: 3, image: dorm3, name: "Sukjai Apartment", location: "ใกล้ ม.ศิลปากร", distance: "800 ม.", rating: 4.2, reviews: 80, price: 2800, originalPrice: 3200, badge: "ลดราคา", badgeType: "promo" as const, roomType: "shared", amenities: ["fan", "wifi"], pets: true, nearBTS: false, lat: 13.8175, lng: 100.0380 },
+  { id: 4, image: dorm4, name: "Cozy Home", location: "ใกล้ ม.ศิลปากร", distance: "600 ม.", rating: 4.7, reviews: 120, price: 5000, roomType: "single", amenities: ["air", "wifi", "parking", "furniture", "fitness"], pets: false, nearBTS: true, lat: 13.8230, lng: 100.0450 },
+  { id: 5, image: dorm1, name: "Happy Dorm", location: "ใกล้ ม.เกษตร", distance: "200 ม.", rating: 4.8, reviews: 200, price: 3800, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "furniture"], pets: true, nearBTS: true, lat: 13.8478, lng: 100.5696 },
+  { id: 6, image: dorm2, name: "The Nine Place", location: "ใกล้ ม.เกษตร", distance: "450 ม.", rating: 4.3, reviews: 65, price: 4200, roomType: "shared", amenities: ["air", "parking"], pets: false, nearBTS: false, lat: 13.8495, lng: 100.5720 },
+  { id: 7, image: dorm3, name: "Baan Sabai", location: "ลาดพร้าว", distance: "1.2 กม.", rating: 4.0, reviews: 42, price: 2500, originalPrice: 3000, badge: "ลดราคา", badgeType: "promo" as const, roomType: "shared", amenities: ["fan"], pets: true, nearBTS: true, lat: 13.8160, lng: 100.5620 },
+  { id: 8, image: dorm4, name: "Loft Studio 88", location: "ศรีราชา", distance: "700 ม.", rating: 4.9, reviews: 310, price: 6500, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "parking", "furniture", "fitness"], pets: false, nearBTS: false, lat: 13.1674, lng: 100.9265 },
+  { id: 9, image: dorm1, name: "PJ Mansion", location: "ใกล้ ม.ศิลปากร", distance: "350 ม.", rating: 3.9, reviews: 30, price: 2200, roomType: "shared", amenities: ["fan", "wifi"], pets: false, nearBTS: false, lat: 13.8205, lng: 100.0425 },
+  { id: 10, image: dorm2, name: "City Dorm Plus", location: "เชียงใหม่", distance: "900 ม.", rating: 4.4, reviews: 88, price: 3500, badge: "ใหม่", badgeType: "new" as const, roomType: "single", amenities: ["air", "wifi", "furniture"], pets: true, nearBTS: false, lat: 18.7953, lng: 98.9523 },
+  { id: 11, image: dorm3, name: "River Side Room", location: "ใกล้ ม.ธรรมศาสตร์", distance: "1 กม.", rating: 4.1, reviews: 55, price: 2900, roomType: "single", amenities: ["air", "wifi", "parking"], pets: false, nearBTS: true, lat: 14.0723, lng: 100.6015 },
+  { id: 12, image: dorm4, name: "Premium Suite", location: "สยาม", distance: "400 ม.", rating: 4.6, reviews: 175, price: 7500, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "parking", "furniture", "fitness"], pets: true, nearBTS: true, lat: 13.7460, lng: 100.5347 },
 ];
 
 const ITEMS_PER_PAGE = 6;
@@ -143,8 +145,11 @@ const Listing = () => {
   const [minRating, setMinRating] = useState(params.minRating);
   const [sort, setSort] = useState<SortOption>(params.sort);
   const [page, setPage] = useState(params.page);
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [viewMode, setViewMode] = useState<"list" | "map" | "hybrid">(() => {
+    try { return (localStorage.getItem("dorm_view_mode") as "list" | "map" | "hybrid") || "list"; } catch { return "list"; }
+  });
   const [loading, setLoading] = useState(false);
+  const [highlightedDormId, setHighlightedDormId] = useState<number | null>(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -527,12 +532,15 @@ const Listing = () => {
 
           {/* View toggle */}
           <div className="hidden md:flex items-center border border-border rounded-lg overflow-hidden shrink-0">
-            <button onClick={() => setViewMode("list")} className={`px-3 py-2 flex items-center gap-1 text-xs font-medium transition ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-card text-foreground hover:bg-secondary"}`}>
-              <LayoutGrid className="h-4 w-4" /> รายการ
-            </button>
-            <button onClick={() => setViewMode("map")} className={`px-3 py-2 flex items-center gap-1 text-xs font-medium transition ${viewMode === "map" ? "bg-primary text-primary-foreground" : "bg-card text-foreground hover:bg-secondary"}`}>
-              <Map className="h-4 w-4" /> แผนที่
-            </button>
+            {(["list", "hybrid", "map"] as const).map((m) => {
+              const icons = { list: <LayoutGrid className="h-4 w-4" />, hybrid: <><LayoutGrid className="h-3.5 w-3.5" /><Map className="h-3.5 w-3.5" /></>, map: <Map className="h-4 w-4" /> };
+              const labels = { list: "รายการ", hybrid: "ผสม", map: "แผนที่" };
+              return (
+                <button key={m} onClick={() => { setViewMode(m); localStorage.setItem("dorm_view_mode", m); }} className={`px-3 py-2 flex items-center gap-1 text-xs font-medium transition ${viewMode === m ? "bg-primary text-primary-foreground" : "bg-card text-foreground hover:bg-secondary"}`}>
+                  {icons[m]} {labels[m]}
+                </button>
+              );
+            })}
           </div>
           </div>
         </div>
@@ -625,25 +633,91 @@ const Listing = () => {
         )}
 
         {/* Main layout */}
-        <div className="flex gap-6">
-          {/* Sidebar - desktop */}
-          <aside className="hidden lg:block w-72 shrink-0">
-            <div className="bg-card rounded-xl border border-border p-5 sticky top-20">
-              <FilterContent />
-            </div>
-          </aside>
+        <div className={`flex gap-6 ${viewMode === "hybrid" ? "flex-col lg:flex-row" : ""}`}>
+          {/* Sidebar - desktop (hide on full map) */}
+          {viewMode !== "map" && (
+            <aside className="hidden lg:block w-72 shrink-0">
+              <div className="bg-card rounded-xl border border-border p-5 sticky top-20">
+                <FilterContent />
+              </div>
+            </aside>
+          )}
 
-          {/* Results */}
+          {/* Hybrid: list left + map right */}
+          {viewMode === "hybrid" ? (
+            <div className="flex-1 flex flex-col lg:flex-row gap-4 min-w-0">
+              {/* List side */}
+              <div className="flex-1 min-w-0 max-h-[700px] overflow-y-auto space-y-3 pr-1">
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex gap-3 bg-card rounded-xl border border-border p-3 animate-pulse">
+                      <Skeleton className="w-24 h-20 rounded-lg shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                        <Skeleton className="h-3 w-1/3" />
+                      </div>
+                    </div>
+                  ))
+                ) : filtered.length === 0 ? (
+                  <div className="bg-card border border-border rounded-xl p-8 text-center">
+                    <SearchX className="h-12 w-12 mx-auto text-muted-foreground/40 mb-2" />
+                    <p className="font-semibold text-foreground">ไม่พบหอที่ตรงเงื่อนไข</p>
+                    <Button size="sm" onClick={resetFilters} className="mt-2 gap-1"><RotateCcw className="h-3 w-3" /> รีเซ็ต</Button>
+                  </div>
+                ) : (
+                  filtered.map((dorm) => (
+                    <div
+                      key={dorm.id}
+                      className={`flex gap-3 bg-card rounded-xl border overflow-hidden cursor-pointer transition-all duration-200 ${highlightedDormId === dorm.id ? "border-primary ring-2 ring-primary/20 shadow-md" : "border-border hover:shadow-md"}`}
+                      onMouseEnter={() => setHighlightedDormId(dorm.id)}
+                      onMouseLeave={() => setHighlightedDormId(null)}
+                    >
+                      <div className="relative w-28 h-24 shrink-0 overflow-hidden">
+                        <img src={dorm.image} alt={dorm.name} className="w-full h-full object-cover" />
+                        {dorm.badge && (
+                          <span className={`absolute top-1 left-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${dorm.badgeType === "hot" ? "badge-hot" : dorm.badgeType === "new" ? "badge-new" : "badge-promo"}`}>{dorm.badge}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 py-2 pr-3 min-w-0">
+                        <h4 className="font-semibold text-sm text-foreground truncate">{dorm.name}</h4>
+                        <p className="text-primary font-bold text-sm">฿{dorm.price.toLocaleString()}<span className="text-xs font-normal text-muted-foreground">/เดือน</span></p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Star className="h-3 w-3 fill-[hsl(var(--star))] text-[hsl(var(--star))]" />
+                          <span className="text-xs font-medium">{dorm.rating}</span>
+                          <span className="text-xs text-muted-foreground">· {dorm.distance}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              {/* Map side */}
+              <div className="flex-1 min-h-[400px] lg:min-h-0 lg:h-[700px] sticky top-20">
+                <Suspense fallback={<div className="h-full bg-card border border-border rounded-xl flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+                  <DormMapView
+                    dorms={filtered}
+                    loading={loading}
+                    highlightedId={highlightedDormId}
+                    onDormHover={setHighlightedDormId}
+                    mode="hybrid"
+                  />
+                </Suspense>
+              </div>
+            </div>
+          ) : (
+          /* Results - list or full map */
           <main className="flex-1 min-w-0">
             {viewMode === "map" ? (
-              <div className="bg-card border border-border rounded-xl h-[500px] flex items-center justify-center">
-                <div className="text-center text-muted-foreground">
-                  <Map className="h-16 w-16 mx-auto mb-3 opacity-40" />
-                  <p className="text-lg font-semibold">Map View</p>
-                  <p className="text-sm">แผนที่จะแสดงตำแหน่งหอพักทั้งหมด</p>
-                  <p className="text-xs mt-1">(เชื่อมต่อ Google Maps API เร็ว ๆ นี้)</p>
-                </div>
-              </div>
+              <Suspense fallback={<div className="h-[600px] bg-card border border-border rounded-xl flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+                <DormMapView
+                  dorms={filtered}
+                  loading={loading}
+                  highlightedId={highlightedDormId}
+                  onDormHover={setHighlightedDormId}
+                  mode="full"
+                />
+              </Suspense>
             ) : loading ? (
               <div className="space-y-4">
                 {[1, 2, 3, 4].map((i) => (
@@ -777,6 +851,7 @@ const Listing = () => {
               </div>
             )}
           </main>
+          )}
         </div>
       </div>
 
