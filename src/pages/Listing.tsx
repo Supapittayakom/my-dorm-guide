@@ -279,22 +279,99 @@ const Listing = () => {
       <Navbar />
 
       <div className="container mx-auto px-4 py-4">
-        {/* Breadcrumb */}
-        <Breadcrumb className="mb-4">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild><Link to="/" className="flex items-center gap-1"><Home className="h-4 w-4" /> Home</Link></BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem><BreadcrumbLink href="/listing">หอพัก</BreadcrumbLink></BreadcrumbItem>
-            {debouncedQuery && (
-              <>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem><BreadcrumbPage>ค้นหา "{debouncedQuery}"</BreadcrumbPage></BreadcrumbItem>
-              </>
-            )}
-          </BreadcrumbList>
-        </Breadcrumb>
+        {/* Breadcrumb — dynamic based on URL context */}
+        {(() => {
+          // Build breadcrumb segments from current filters/search
+          const crumbs: { label: string; href?: string; icon?: React.ReactNode }[] = [
+            { label: "Home", href: "/", icon: <Home className="h-4 w-4" /> },
+            { label: "หอพัก", href: "/listing" },
+          ];
+
+          // Add context crumbs from active filters
+          if (debouncedQuery) {
+            crumbs.push({ label: `ค้นหา "${debouncedQuery}"` });
+          } else {
+            // Show primary filter context
+            const contextParts: string[] = [];
+            if (roomTypes.length > 0) contextParts.push(roomTypes.map(t => t === "single" ? "ห้องเดี่ยว" : "ห้องรวม").join(", "));
+            if (selectedAmenities.includes("air")) contextParts.push("ห้องแอร์");
+            if (debouncedPrice[0] !== DEFAULT_PRICE[0] || debouncedPrice[1] !== DEFAULT_PRICE[1]) {
+              contextParts.push(`฿${debouncedPrice[0].toLocaleString()}–${debouncedPrice[1].toLocaleString()}`);
+            }
+            if (nearBTS) contextParts.push("ใกล้ BTS / มหาลัย");
+            if (contextParts.length > 0) {
+              crumbs.push({ label: contextParts.slice(0, 2).join(" · ") });
+            }
+          }
+
+          // JSON-LD structured data for SEO
+          const jsonLd = {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: crumbs.map((c, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              name: c.label,
+              ...(c.href ? { item: `${window.location.origin}${c.href}` } : {}),
+            })),
+          };
+
+          const lastIdx = crumbs.length - 1;
+
+          return (
+            <>
+              <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+              <Breadcrumb className="mb-4">
+                <BreadcrumbList className="flex-nowrap overflow-x-auto scrollbar-hide">
+                  {crumbs.map((crumb, i) => (
+                    <span key={i} className="contents">
+                      {i > 0 && <BreadcrumbSeparator className="hidden sm:flex" />}
+                      {/* Mobile: show only first + last, ellipsis in between */}
+                      {i > 0 && i < lastIdx && crumbs.length > 2 && (
+                        <BreadcrumbSeparator className="flex sm:hidden" />
+                      )}
+                      {i > 0 && i < lastIdx && crumbs.length > 3 ? (
+                        <BreadcrumbItem className="hidden sm:flex">
+                          {crumb.href ? (
+                            <BreadcrumbLink asChild>
+                              <Link to={crumb.href} className="flex items-center gap-1 hover:text-primary transition-colors">
+                                {crumb.icon} {crumb.label}
+                              </Link>
+                            </BreadcrumbLink>
+                          ) : (
+                            <BreadcrumbPage className="font-semibold text-foreground">{crumb.label}</BreadcrumbPage>
+                          )}
+                        </BreadcrumbItem>
+                      ) : (
+                        <BreadcrumbItem>
+                          {i === lastIdx && !crumb.href ? (
+                            <BreadcrumbPage className="font-semibold text-foreground truncate max-w-[200px] sm:max-w-none">
+                              {crumb.label}
+                            </BreadcrumbPage>
+                          ) : crumb.href ? (
+                            <BreadcrumbLink asChild>
+                              <Link
+                                to={crumb.href}
+                                onClick={crumb.href === "/listing" ? resetFilters : undefined}
+                                className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                              >
+                                {crumb.icon} {crumb.label}
+                              </Link>
+                            </BreadcrumbLink>
+                          ) : (
+                            <BreadcrumbPage className="font-semibold text-foreground truncate max-w-[200px] sm:max-w-none">
+                              {crumb.label}
+                            </BreadcrumbPage>
+                          )}
+                        </BreadcrumbItem>
+                      )}
+                    </span>
+                  ))}
+                </BreadcrumbList>
+              </Breadcrumb>
+            </>
+          );
+        })()}
 
         {/* Search + Sort bar */}
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
