@@ -17,7 +17,10 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  Search, MapPin, LayoutGrid, Map, SlidersHorizontal, X, Home, SearchX, RotateCcw, Star,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Search, MapPin, LayoutGrid, Map, SlidersHorizontal, X, Home, SearchX, RotateCcw, Star, ArrowUpDown, ChevronDown,
 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 
