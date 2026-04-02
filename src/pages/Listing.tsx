@@ -54,13 +54,23 @@ const amenityLabels: Record<string, string> = {
   air: "แอร์", wifi: "Wi-Fi", parking: "ที่จอดรถ", furniture: "เฟอร์นิเจอร์", fitness: "ฟิตเนส",
 };
 
-const sortOptions: { value: SortOption; label: string }[] = [
-  { value: "popular", label: "ยอดนิยม" },
-  { value: "price-asc", label: "ราคาต่ำสุด" },
-  { value: "price-desc", label: "ราคาสูงสุด" },
-  { value: "rating", label: "รีวิวดีที่สุด" },
-  { value: "nearest", label: "ใกล้ที่สุด" },
+const sortOptions: { value: SortOption; label: string; icon: string }[] = [
+  { value: "popular", label: "ยอดนิยม", icon: "🔥" },
+  { value: "price-asc", label: "ราคาต่ำ → สูง", icon: "💸" },
+  { value: "price-desc", label: "ราคาสูง → ต่ำ", icon: "💸" },
+  { value: "rating", label: "รีวิวดีที่สุด", icon: "⭐" },
+  { value: "nearest", label: "ใกล้ที่สุด", icon: "📍" },
 ];
+
+const DEFAULT_SORT: SortOption = "popular";
+
+/** Parse distance string to meters for sorting */
+function parseDistance(d: string): number {
+  const num = parseFloat(d);
+  if (isNaN(num)) return Infinity;
+  if (d.includes("กม")) return num * 1000;
+  return num;
+}
 
 // ─── Parse URL → State ───
 function parseParams(sp: URLSearchParams) {
