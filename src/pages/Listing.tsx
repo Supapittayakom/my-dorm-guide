@@ -69,6 +69,8 @@ import dorm2 from "@/assets/dorm2.jpg";
 import dorm3 from "@/assets/dorm3.jpg";
 import dorm4 from "@/assets/dorm4.jpg";
 
+const DormMapView = lazy(() => import("@/components/DormMapView"));
+
 // Mock data
 const allDorms = [
   { id: 1, image: dorm1, name: "Green View Residence", location: "ใกล้ ม.ศิลปากร", distance: "500 ม.", rating: 4.6, reviews: 150, price: 4500, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "parking"], pets: false, nearBTS: false, lat: 13.8199, lng: 100.0413 },
