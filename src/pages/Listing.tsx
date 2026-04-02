@@ -309,18 +309,28 @@ const Listing = () => {
             />
           </div>
 
-          {/* Sort pills - desktop */}
-          <div className="hidden lg:flex items-center gap-1 shrink-0">
-            <span className="text-sm text-muted-foreground mr-1">เรียงตาม:</span>
-            {sortOptions.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => { setSort(opt.value); setPage(1); }}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${sort === opt.value ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary text-secondary-foreground hover:bg-secondary/70"}`}
-              >
-                {opt.label}
-              </button>
-            ))}
+          {/* Sort dropdown - desktop */}
+          <div className="hidden lg:flex items-center gap-2 shrink-0">
+            <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+            <Select value={sort} onValueChange={(v) => { setSort(v as SortOption); setPage(1); }}>
+              <SelectTrigger className="w-[200px] h-10 bg-card border-border">
+                <SelectValue placeholder="เรียงตาม" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    <span className="flex items-center gap-2">
+                      <span>{opt.icon}</span> {opt.label}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {sort !== DEFAULT_SORT && (
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => { setSort(DEFAULT_SORT); setPage(1); }} title="รีเซ็ตการเรียง">
+                <RotateCcw className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
 
           {/* View toggle */}
