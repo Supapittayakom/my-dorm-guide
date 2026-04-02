@@ -145,8 +145,11 @@ const Listing = () => {
   const [minRating, setMinRating] = useState(params.minRating);
   const [sort, setSort] = useState<SortOption>(params.sort);
   const [page, setPage] = useState(params.page);
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [viewMode, setViewMode] = useState<"list" | "map" | "hybrid">(() => {
+    try { return (localStorage.getItem("dorm_view_mode") as "list" | "map" | "hybrid") || "list"; } catch { return "list"; }
+  });
   const [loading, setLoading] = useState(false);
+  const [highlightedDormId, setHighlightedDormId] = useState<number | null>(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
