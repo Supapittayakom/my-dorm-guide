@@ -367,13 +367,33 @@ const Listing = () => {
               </div>
             </SheetContent>
           </Sheet>
-          <select
-            className="h-10 px-3 rounded-lg border border-input bg-background text-foreground text-sm"
-            value={sort}
-            onChange={(e) => { setSort(e.target.value as SortOption); setPage(1); }}
-          >
-            {sortOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <ArrowUpDown className="h-4 w-4" />
+                {sortOptions.find((o) => o.value === sort)?.label || "เรียงตาม"}
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="rounded-t-2xl pb-8">
+              <SheetHeader>
+                <SheetTitle>เรียงตาม</SheetTitle>
+              </SheetHeader>
+              <div className="mt-4 space-y-1">
+                {sortOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSort(opt.value); setPage(1); }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${sort === opt.value ? "bg-primary/10 text-primary" : "text-foreground hover:bg-secondary"}`}
+                  >
+                    <span className="text-lg">{opt.icon}</span>
+                    {opt.label}
+                    {sort === opt.value && <span className="ml-auto text-primary">✓</span>}
+                  </button>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
         {/* Search highlight + result count */}
