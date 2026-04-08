@@ -14,6 +14,143 @@ export type Database = {
   }
   public: {
     Tables: {
+      dorm_images: {
+        Row: {
+          created_at: string
+          dorm_id: string
+          id: string
+          image_url: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          dorm_id: string
+          id?: string
+          image_url: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          dorm_id?: string
+          id?: string
+          image_url?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dorm_images_dorm_id_fkey"
+            columns: ["dorm_id"]
+            isOneToOne: false
+            referencedRelation: "dorms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dorms: {
+        Row: {
+          address: string | null
+          available_rooms: number
+          created_at: string
+          description: string | null
+          district: string | null
+          has_air_conditioning: boolean
+          has_cctv: boolean
+          has_elevator: boolean
+          has_furniture: boolean
+          has_kitchen: boolean
+          has_laundry: boolean
+          has_parking: boolean
+          has_pet_allowed: boolean
+          has_security: boolean
+          has_wifi: boolean
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          near_university: string | null
+          owner_id: string
+          price_max: number
+          price_min: number
+          province: string | null
+          rating: number | null
+          review_count: number | null
+          room_type: string
+          status: string
+          thumbnail_url: string | null
+          total_rooms: number
+          updated_at: string
+          view_count: number | null
+        }
+        Insert: {
+          address?: string | null
+          available_rooms?: number
+          created_at?: string
+          description?: string | null
+          district?: string | null
+          has_air_conditioning?: boolean
+          has_cctv?: boolean
+          has_elevator?: boolean
+          has_furniture?: boolean
+          has_kitchen?: boolean
+          has_laundry?: boolean
+          has_parking?: boolean
+          has_pet_allowed?: boolean
+          has_security?: boolean
+          has_wifi?: boolean
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          near_university?: string | null
+          owner_id: string
+          price_max?: number
+          price_min?: number
+          province?: string | null
+          rating?: number | null
+          review_count?: number | null
+          room_type?: string
+          status?: string
+          thumbnail_url?: string | null
+          total_rooms?: number
+          updated_at?: string
+          view_count?: number | null
+        }
+        Update: {
+          address?: string | null
+          available_rooms?: number
+          created_at?: string
+          description?: string | null
+          district?: string | null
+          has_air_conditioning?: boolean
+          has_cctv?: boolean
+          has_elevator?: boolean
+          has_furniture?: boolean
+          has_kitchen?: boolean
+          has_laundry?: boolean
+          has_parking?: boolean
+          has_pet_allowed?: boolean
+          has_security?: boolean
+          has_wifi?: boolean
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          near_university?: string | null
+          owner_id?: string
+          price_max?: number
+          price_min?: number
+          province?: string | null
+          rating?: number | null
+          review_count?: number | null
+          room_type?: string
+          status?: string
+          thumbnail_url?: string | null
+          total_rooms?: number
+          updated_at?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
