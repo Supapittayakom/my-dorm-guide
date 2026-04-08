@@ -38,8 +38,8 @@ const Navbar = () => {
             <Link to="/listing"><Building2 className="h-4 w-4" /> หอพัก</Link>
           </Button>
           {user && (roles.includes("owner") || roles.includes("admin")) && (
-            <Button variant="outline" className="gap-2 font-medium">
-              <FileEdit className="h-4 w-4" /> ลงประกาศหอพัก
+            <Button variant="outline" className="gap-2 font-medium" asChild>
+              <Link to="/manage-dorms"><FileEdit className="h-4 w-4" /> จัดการหอพัก</Link>
             </Button>
           )}
         </div>
