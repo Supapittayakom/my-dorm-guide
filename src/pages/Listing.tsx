@@ -130,7 +130,7 @@ const Listing = () => {
     try { return (localStorage.getItem("dorm_view_mode") as "list" | "map" | "hybrid") || "list"; } catch { return "list"; }
   });
   const [loading, setLoading] = useState(false);
-  const [highlightedDormId, setHighlightedDormId] = useState<number | null>(null);
+  const [highlightedDormId, setHighlightedDormId] = useState<string | null>(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -151,10 +151,18 @@ const Listing = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Auto-suggest: filter suggestions by current query
-  const suggestions = useMemo(() => {
-    if (!query || query.length < 1) return [];
-    return suggestionData.filter((s) => s.toLowerCase().includes(query.toLowerCase())).slice(0, 6);
+  // Auto-suggest: fetch from DB (debounced) + merge with static fallback
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!query) { setSuggestions([]); return; }
+    const staticHits = suggestionData.filter((s) => s.toLowerCase().includes(query.toLowerCase())).slice(0, 6);
+    fetchDormSuggestions(query, 6).then((dbHits) => {
+      if (cancelled) return;
+      const merged = Array.from(new Set([...dbHits, ...staticHits])).slice(0, 6);
+      setSuggestions(merged);
+    }).catch(() => { if (!cancelled) setSuggestions(staticHits); });
+    return () => { cancelled = true; };
   }, [query]);
 
   const recentSearches = useMemo(() => getRecent(), [searchFocused]); // refresh when focused
@@ -177,46 +185,51 @@ const Listing = () => {
 
   useEffect(() => { syncURL(); }, [syncURL]);
 
-  // Simulate loading on filter change
-  useEffect(() => {
-    setLoading(true);
-    const t = setTimeout(() => setLoading(false), 350);
-    return () => clearTimeout(t);
-  }, [debouncedQuery, debouncedPrice, roomTypes, selectedAmenities, petFriendly, nearBTS, minRating, sort]);
+  // ─── Real backend search ───
+  const { data: dorms, count: totalCount, loading } = useDormSearch({
+    q: debouncedQuery,
+    priceMin: debouncedPrice[0],
+    priceMax: debouncedPrice[1],
+    roomTypes,
+    amenities: selectedAmenities,
+    petFriendly,
+    nearBTS,
+    minRating,
+    sort,
+    page,
+    pageSize: ITEMS_PER_PAGE,
+  });
 
-  // ─── Filter + Sort ───
-  const filtered = useMemo(() => {
-    let result = allDorms.filter((d) => {
-      if (debouncedQuery && !d.name.toLowerCase().includes(debouncedQuery.toLowerCase()) && !d.location.toLowerCase().includes(debouncedQuery.toLowerCase())) return false;
-      if (d.price < debouncedPrice[0] || d.price > debouncedPrice[1]) return false;
-      if (roomTypes.length > 0 && !roomTypes.includes(d.roomType)) return false;
-      if (selectedAmenities.length > 0 && !selectedAmenities.every((a) => d.amenities.includes(a))) return false;
-      if (petFriendly && !d.pets) return false;
-      if (nearBTS && !d.nearBTS) return false;
-      if (minRating && d.rating < 4) return false;
-      return true;
-    });
-    // Primary + secondary sort with edge case handling
-    result.sort((a, b) => {
-      let cmp = 0;
-      switch (sort) {
-        case "price-asc": cmp = a.price - b.price; break;
-        case "price-desc": cmp = b.price - a.price; break;
-        case "rating": cmp = (b.rating ?? 0) - (a.rating ?? 0); break;
-        case "nearest": cmp = parseDistance(a.distance) - parseDistance(b.distance); break;
-        default: cmp = b.reviews - a.reviews; break;
-      }
-      // Secondary sort: if equal, sort by rating desc then price asc
-      if (cmp === 0) cmp = (b.rating ?? 0) - (a.rating ?? 0);
-      if (cmp === 0) cmp = a.price - b.price;
-      return cmp;
-    });
-    return result;
-  }, [debouncedQuery, debouncedPrice, roomTypes, selectedAmenities, petFriendly, nearBTS, minRating, sort]);
+  // Adapter: map DB rows → UI shape used throughout existing JSX
+  const filtered = useMemo(() => dorms.map((d: DormRow) => ({
+    id: d.id,
+    image: d.thumbnail_url || dormPlaceholder,
+    name: d.name,
+    location: d.near_university || d.district || d.province || "—",
+    distance: "",
+    rating: Number(d.rating ?? 0),
+    reviews: d.review_count ?? 0,
+    price: Number(d.price_min ?? 0),
+    originalPrice: undefined as number | undefined,
+    badge: undefined as string | undefined,
+    badgeType: "hot" as const,
+    roomType: d.room_type,
+    amenities: [
+      d.has_air_conditioning && "air",
+      d.has_wifi && "wifi",
+      d.has_parking && "parking",
+      d.has_furniture && "furniture",
+      d.has_elevator && "fitness",
+    ].filter(Boolean) as string[],
+    pets: d.has_pet_allowed,
+    nearBTS: false,
+    lat: d.latitude ?? 0,
+    lng: d.longitude ?? 0,
+  })), [dorms]);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const safePage = Math.min(page, Math.max(totalPages, 1));
-  const paged = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered;
 
   // ─── Active filter tags ───
   const activeTags: { label: string; onRemove: () => void }[] = [];
