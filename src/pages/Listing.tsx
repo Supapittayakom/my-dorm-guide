@@ -66,28 +66,7 @@ const suggestionData = [
   "PJ Mansion", "City Dorm Plus", "River Side Room", "Premium Suite",
 ];
 
-import dorm1 from "@/assets/dorm1.jpg";
-import dorm2 from "@/assets/dorm2.jpg";
-import dorm3 from "@/assets/dorm3.jpg";
-import dorm4 from "@/assets/dorm4.jpg";
-
 const DormMapView = lazy(() => import("@/components/DormMapView"));
-
-// Mock data
-const allDorms = [
-  { id: 1, image: dorm1, name: "Green View Residence", location: "ใกล้ ม.ศิลปากร", distance: "500 ม.", rating: 4.6, reviews: 150, price: 4500, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "parking"], pets: false, nearBTS: false, lat: 13.8199, lng: 100.0413 },
-  { id: 2, image: dorm2, name: "Campus Place", location: "ใกล้ ม.ศิลปากร", distance: "300 ม.", rating: 4.5, reviews: 95, price: 3200, badge: "ใหม่", badgeType: "new" as const, roomType: "single", amenities: ["air", "wifi"], pets: false, nearBTS: true, lat: 13.8215, lng: 100.0435 },
-  { id: 3, image: dorm3, name: "Sukjai Apartment", location: "ใกล้ ม.ศิลปากร", distance: "800 ม.", rating: 4.2, reviews: 80, price: 2800, originalPrice: 3200, badge: "ลดราคา", badgeType: "promo" as const, roomType: "shared", amenities: ["fan", "wifi"], pets: true, nearBTS: false, lat: 13.8175, lng: 100.0380 },
-  { id: 4, image: dorm4, name: "Cozy Home", location: "ใกล้ ม.ศิลปากร", distance: "600 ม.", rating: 4.7, reviews: 120, price: 5000, roomType: "single", amenities: ["air", "wifi", "parking", "furniture", "fitness"], pets: false, nearBTS: true, lat: 13.8230, lng: 100.0450 },
-  { id: 5, image: dorm1, name: "Happy Dorm", location: "ใกล้ ม.เกษตร", distance: "200 ม.", rating: 4.8, reviews: 200, price: 3800, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "furniture"], pets: true, nearBTS: true, lat: 13.8478, lng: 100.5696 },
-  { id: 6, image: dorm2, name: "The Nine Place", location: "ใกล้ ม.เกษตร", distance: "450 ม.", rating: 4.3, reviews: 65, price: 4200, roomType: "shared", amenities: ["air", "parking"], pets: false, nearBTS: false, lat: 13.8495, lng: 100.5720 },
-  { id: 7, image: dorm3, name: "Baan Sabai", location: "ลาดพร้าว", distance: "1.2 กม.", rating: 4.0, reviews: 42, price: 2500, originalPrice: 3000, badge: "ลดราคา", badgeType: "promo" as const, roomType: "shared", amenities: ["fan"], pets: true, nearBTS: true, lat: 13.8160, lng: 100.5620 },
-  { id: 8, image: dorm4, name: "Loft Studio 88", location: "ศรีราชา", distance: "700 ม.", rating: 4.9, reviews: 310, price: 6500, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "parking", "furniture", "fitness"], pets: false, nearBTS: false, lat: 13.1674, lng: 100.9265 },
-  { id: 9, image: dorm1, name: "PJ Mansion", location: "ใกล้ ม.ศิลปากร", distance: "350 ม.", rating: 3.9, reviews: 30, price: 2200, roomType: "shared", amenities: ["fan", "wifi"], pets: false, nearBTS: false, lat: 13.8205, lng: 100.0425 },
-  { id: 10, image: dorm2, name: "City Dorm Plus", location: "เชียงใหม่", distance: "900 ม.", rating: 4.4, reviews: 88, price: 3500, badge: "ใหม่", badgeType: "new" as const, roomType: "single", amenities: ["air", "wifi", "furniture"], pets: true, nearBTS: false, lat: 18.7953, lng: 98.9523 },
-  { id: 11, image: dorm3, name: "River Side Room", location: "ใกล้ ม.ธรรมศาสตร์", distance: "1 กม.", rating: 4.1, reviews: 55, price: 2900, roomType: "single", amenities: ["air", "wifi", "parking"], pets: false, nearBTS: true, lat: 14.0723, lng: 100.6015 },
-  { id: 12, image: dorm4, name: "Premium Suite", location: "สยาม", distance: "400 ม.", rating: 4.6, reviews: 175, price: 7500, badge: "ยอดนิยม", badgeType: "hot" as const, roomType: "single", amenities: ["air", "wifi", "parking", "furniture", "fitness"], pets: true, nearBTS: true, lat: 13.7460, lng: 100.5347 },
-];
 
 const ITEMS_PER_PAGE = 6;
 type SortOption = "popular" | "price-asc" | "price-desc" | "rating" | "nearest";
