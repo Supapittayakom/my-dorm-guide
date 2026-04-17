@@ -62,27 +62,24 @@ function FitBounds({ positions }: { positions: [number, number][] }) {
 }
 
 export interface DormMapItem {
-  id: number;
+  id: string;
   image: string;
   name: string;
   location: string;
-  distance: string;
   rating: number;
-  reviews: number;
   price: number;
-  originalPrice?: number;
-  badge?: string;
-  badgeType?: "hot" | "new" | "promo";
   lat: number;
   lng: number;
+  badge?: string;
+  badgeType?: "hot" | "new" | "promo";
 }
 
 interface DormMapViewProps {
   dorms: DormMapItem[];
   loading?: boolean;
-  highlightedId?: number | null;
-  onDormSelect?: (id: number) => void;
-  onDormHover?: (id: number | null) => void;
+  highlightedId?: string | null;
+  onDormSelect?: (id: string) => void;
+  onDormHover?: (id: string | null) => void;
   className?: string;
   mode?: "full" | "hybrid";
 }

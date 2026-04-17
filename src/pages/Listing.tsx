@@ -129,7 +129,7 @@ const Listing = () => {
   const [viewMode, setViewMode] = useState<"list" | "map" | "hybrid">(() => {
     try { return (localStorage.getItem("dorm_view_mode") as "list" | "map" | "hybrid") || "list"; } catch { return "list"; }
   });
-  const [loading, setLoading] = useState(false);
+  // loading state comes from useDormSearch below
   const [highlightedDormId, setHighlightedDormId] = useState<string | null>(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
