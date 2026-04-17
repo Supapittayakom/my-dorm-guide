@@ -23,6 +23,8 @@ import {
   Search, MapPin, LayoutGrid, Map, SlidersHorizontal, X, Home, SearchX, RotateCcw, Star, ArrowUpDown, ChevronDown, Clock, Loader2,
 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useDormSearch, fetchDormSuggestions, type DormRow } from "@/hooks/useDormSearch";
+import dormPlaceholder from "@/assets/dorm1.jpg";
 
 // ─── Highlight keyword helper ───
 const HighlightText = ({ text, keyword }: { text: string; keyword: string }) => {
