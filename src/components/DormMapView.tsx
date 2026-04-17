@@ -67,6 +67,8 @@ export interface DormMapItem {
   name: string;
   location: string;
   rating: number;
+  reviews?: number;
+  distance?: string;
   price: number;
   lat: number;
   lng: number;
