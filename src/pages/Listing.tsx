@@ -204,7 +204,7 @@ const Listing = () => {
   // Adapter: map DB rows → UI shape used throughout existing JSX
   const filtered = useMemo(() => dorms.map((d: DormRow) => ({
     id: d.id,
-    ownerId: (d as any).owner_id as string,
+    ownerId: d.owner_id,
     image: d.thumbnail_url || dormPlaceholder,
     name: d.name,
     location: d.near_university || d.district || d.province || "—",
