@@ -19,6 +19,7 @@ export interface DormQuery {
 
 export interface DormRow {
   id: string;
+  owner_id: string;
   name: string;
   description: string | null;
   price_min: number;
