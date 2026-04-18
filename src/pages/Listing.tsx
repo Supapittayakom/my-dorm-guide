@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useDormSearch, fetchDormSuggestions, type DormRow } from "@/hooks/useDormSearch";
+import BookingDialog from "@/components/BookingDialog";
 import dormPlaceholder from "@/assets/dorm1.jpg";
 
 // ─── Highlight keyword helper ───
@@ -203,6 +204,7 @@ const Listing = () => {
   // Adapter: map DB rows → UI shape used throughout existing JSX
   const filtered = useMemo(() => dorms.map((d: DormRow) => ({
     id: d.id,
+    ownerId: (d as any).owner_id as string,
     image: d.thumbnail_url || dormPlaceholder,
     name: d.name,
     location: d.near_university || d.district || d.province || "—",
@@ -784,8 +786,15 @@ const Listing = () => {
                             ))}
                           </div>
                         </div>
-                        <div className="flex items-center justify-between mt-3">
-                          <Button size="sm" className="gap-1">ดูรายละเอียด →</Button>
+                        <div className="flex items-center justify-between gap-2 mt-3">
+                          <Button size="sm" variant="outline" className="gap-1">ดูรายละเอียด</Button>
+                          <BookingDialog
+                            dormId={dorm.id}
+                            dormName={dorm.name}
+                            ownerId={dorm.ownerId}
+                            priceMin={dorm.price}
+                            defaultRoomType={dorm.roomType}
+                          />
                         </div>
                       </div>
                       {/* Heart */}
