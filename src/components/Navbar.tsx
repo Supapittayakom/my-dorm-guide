@@ -1,4 +1,4 @@
-import { Home, Building2, FileEdit, Bell, Heart, User, LogIn, LogOut, Loader2 } from "lucide-react";
+import { Home, Building2, FileEdit, Bell, Heart, User, LogIn, LogOut, Loader2, CalendarCheck, Inbox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,10 +37,20 @@ const Navbar = () => {
           <Button variant="ghost" className="gap-2 font-medium" asChild>
             <Link to="/listing"><Building2 className="h-4 w-4" /> หอพัก</Link>
           </Button>
-          {user && (roles.includes("owner") || roles.includes("admin")) && (
-            <Button variant="outline" className="gap-2 font-medium" asChild>
-              <Link to="/manage-dorms"><FileEdit className="h-4 w-4" /> จัดการหอพัก</Link>
+          {user && (
+            <Button variant="ghost" className="gap-2 font-medium" asChild>
+              <Link to="/my-bookings"><CalendarCheck className="h-4 w-4" /> การจองของฉัน</Link>
             </Button>
+          )}
+          {user && (roles.includes("owner") || roles.includes("admin")) && (
+            <>
+              <Button variant="outline" className="gap-2 font-medium" asChild>
+                <Link to="/manage-dorms"><FileEdit className="h-4 w-4" /> จัดการหอพัก</Link>
+              </Button>
+              <Button variant="outline" className="gap-2 font-medium" asChild>
+                <Link to="/owner-bookings"><Inbox className="h-4 w-4" /> คำขอจอง</Link>
+              </Button>
+            </>
           )}
         </div>
 
@@ -78,9 +88,9 @@ const Navbar = () => {
                     <div className="mt-1">{getRoleBadge()}</div>
                   </div>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild><Link to="/my-bookings"><CalendarCheck className="h-4 w-4 mr-2" /> การจองของฉัน</Link></DropdownMenuItem>
                   <DropdownMenuItem><User className="h-4 w-4 mr-2" /> โปรไฟล์</DropdownMenuItem>
                   <DropdownMenuItem><Heart className="h-4 w-4 mr-2" /> รายการโปรด</DropdownMenuItem>
-                  <DropdownMenuItem><Bell className="h-4 w-4 mr-2" /> การแจ้งเตือน</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive" onClick={() => signOut()}>
                     <LogOut className="h-4 w-4 mr-2" /> ออกจากระบบ

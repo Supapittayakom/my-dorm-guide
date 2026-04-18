@@ -12,6 +12,8 @@ import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ManageDorms from "./pages/ManageDorms.tsx";
+import MyBookings from "./pages/MyBookings.tsx";
+import OwnerBookings from "./pages/OwnerBookings.tsx";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,8 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/manage-dorms" element={<ManageDorms />} />
+            <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/owner-bookings" element={<OwnerBookings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
