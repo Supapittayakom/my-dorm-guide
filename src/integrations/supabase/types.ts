@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          check_in_date: string
+          contact_phone: string | null
+          created_at: string
+          dorm_id: string
+          duration_months: number
+          id: string
+          message: string | null
+          monthly_price: number
+          owner_id: string
+          owner_note: string | null
+          room_type: string
+          status: Database["public"]["Enums"]["booking_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          check_in_date: string
+          contact_phone?: string | null
+          created_at?: string
+          dorm_id: string
+          duration_months?: number
+          id?: string
+          message?: string | null
+          monthly_price?: number
+          owner_id: string
+          owner_note?: string | null
+          room_type?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          check_in_date?: string
+          contact_phone?: string | null
+          created_at?: string
+          dorm_id?: string
+          duration_months?: number
+          id?: string
+          message?: string | null
+          monthly_price?: number
+          owner_id?: string
+          owner_note?: string | null
+          room_type?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_dorm_id_fkey"
+            columns: ["dorm_id"]
+            isOneToOne: false
+            referencedRelation: "dorms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dorm_images: {
         Row: {
           created_at: string
@@ -214,6 +273,12 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "owner" | "admin"
+      booking_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "cancelled"
+        | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -342,6 +407,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "owner", "admin"],
+      booking_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled",
+        "completed",
+      ],
     },
   },
 } as const
